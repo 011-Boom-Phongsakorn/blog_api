@@ -59,9 +59,10 @@ exports.login = async (req, res) => {
     }
 
     // 3) เทียบ password ที่กรอกกับ hash ใน DB
-    const isMatch = await bcrypt.compare(password, user.password);
+    const isMatch = await bcrypt.compareSync(password, user.password);
     if (!isMatch) {
-      return res.status(400).json({
+      // 401 ความผิด user
+      return res.status(401).json({
         message: "invalid username or password",
       });
     }
@@ -78,13 +79,21 @@ exports.login = async (req, res) => {
         username: user.username,
       },
       secret,
-      { expiresIn: "1d" }
+      { expiresIn: "1d" },
+      (err, token) => {
+        if (err) {
+          return res
+            .status(500)
+            .send({ message: "Internal server error: Authentication failed" });
+        }
+        res.json({
+          message: "Logged Successfully",
+          id: user._id,
+          username,
+          accessToken: token,
+        });
+      }
     );
-
-    return res.json({
-      message: "login success",
-      token,
-    });
   } catch (err) {
     console.error(err);
     return res.status(500).json({

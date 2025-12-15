@@ -6,6 +6,10 @@ const mongoose = require("mongoose");
 const PORT = 5000 || process.env.PORT;
 const BASE_URL = process.env.BASE_URL;
 const DB_URL = process.env.DB_URL;
+
+const userRouter = require("./routers/user.router");
+const postRouter = require("./routers/post.router");
+
 app.use(
   cors({
     origin: BASE_URL,
@@ -15,10 +19,6 @@ app.use(
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
-app.get("/", (req, res) => {
-  res.send("Hello ky");
-});
 
 if (!DB_URL) {
   console.error("DB_URL is missing. Please set it in your .enf file");
@@ -32,5 +32,8 @@ if (!DB_URL) {
       console.error("MongoDB connection error:", error.message);
     });
 }
+
+app.use("/api/v1/user", userRouter);
+app.use("/api/v1/post", postRouter);
 
 app.listen(PORT, () => console.log(`Server is running on port ${PORT}`));
