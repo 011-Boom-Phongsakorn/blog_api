@@ -3,6 +3,7 @@ require("dotenv").config();
 const cors = require("cors");
 const app = express();
 const mongoose = require("mongoose");
+const multer = require("multer");
 const PORT = 5000 || process.env.PORT;
 const BASE_URL = process.env.BASE_URL;
 const DB_URL = process.env.DB_URL;
@@ -19,6 +20,9 @@ app.use(
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+const upload = multer({ storage: multer.memoryStorage() });
+app.use(upload.single("cover"));
 
 if (!DB_URL) {
   console.error("DB_URL is missing. Please set it in your .enf file");

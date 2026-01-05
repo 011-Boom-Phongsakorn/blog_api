@@ -2,11 +2,15 @@ const Post = require("../models/Post");
 
 exports.createPost = async (req, res) => {
   try {
-    const { title, summary, content, cover } = req.body;
+    if (!req.cover) {
+      return res.status(400).json({ message: "image is required" });
+    }
+
+    const { title, summary, content } = req.body;
     const authorId = req.authorId;
-    if (!title || !summary || !content || !cover) {
+    if (!title || !summary || !content) {
       return res.status(400).json({
-        message: "title, summary, content, cover are required!!",
+        message: "title, summary, content are required!!",
       });
     }
 
@@ -14,7 +18,7 @@ exports.createPost = async (req, res) => {
       title,
       summary,
       content,
-      cover,
+      cover: req.file.firebaseUrl,
       author: authorId,
     });
     // เช็คเพราะ จะได้ แก้บัคได้ง่าย ว่าผิดพลาดตรงไหน จะได้ไม่ต้องส่งให้ catch หมด
