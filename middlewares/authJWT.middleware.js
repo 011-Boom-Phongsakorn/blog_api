@@ -12,6 +12,7 @@ const verifyToken = (req, res, next) => {
   }
 
   // verify token ถูกไหม
+  // ตรวจสอบว่า token นี้ ออกพร้อม secret ตัวนี้ไหม
   jwt.verify(token, secret, (err, decoded) => {
     // ถ้า token ไม่ถูก
     // ไม่อนุญาตให้เข้าถึง

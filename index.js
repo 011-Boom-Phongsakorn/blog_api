@@ -21,8 +21,8 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-const upload = multer({ storage: multer.memoryStorage() });
-app.use(upload.single("cover"));
+// const upload = multer({ storage: multer.memoryStorage() });
+// app.use(upload.single("cover"));
 
 if (!DB_URL) {
   console.error("DB_URL is missing. Please set it in your .enf file");

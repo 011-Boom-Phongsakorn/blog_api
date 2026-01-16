@@ -2,12 +2,16 @@ const Post = require("../models/Post");
 
 exports.createPost = async (req, res) => {
   try {
-    if (!req.cover) {
+    // Get text fields from req.body (when using .fields())
+    const { title, summary, content } = req.body;
+    const authorId = req.authorId;
+
+    // Check file is present
+    const fileArray = req.files?.file;
+    if (!fileArray || fileArray.length === 0) {
       return res.status(400).json({ message: "image is required" });
     }
 
-    const { title, summary, content } = req.body;
-    const authorId = req.authorId;
     if (!title || !summary || !content) {
       return res.status(400).json({
         message: "title, summary, content are required!!",
@@ -32,6 +36,7 @@ exports.createPost = async (req, res) => {
       post,
     });
   } catch (error) {
+    console.log(error);
     return res.status(500).json({ msg: "Server error at create post", error });
   }
 };

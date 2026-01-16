@@ -1,27 +1,20 @@
 const multer = require("multer");
 const path = require("path");
-const firebaseConfig = require("../config/firebase.config");
+const supabaseAdmin = require("../config/supabase.config");
 
-const {
-  getStorage,
-  ref,
-  uploadBytesResumable,
-  getDownloadURL,
-} = require("firebase/storage");
-
-// Initialize Firebase Storage
-const { initializeApp } = require("firebase/app");
-const app = initializeApp(firebaseConfig);
-const firebaseStorage = getStorage(app);
+// Initialize Supabase Storage
+// We'll use supabaseAdmin client for server-side operations
 
 // set storage engine
 const upload = multer({
-  storage: multer.memoryStorage(), // เก็บไวในไหน ใน ram
-  limits: { fileSize: 1000000 }, // ไม่เกิน 1 mb
-  fileFilter: (req, file, cb) => {
-    checkFileType(file, cb);
-  },
-}).single("file");
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 1000000, fieldSize: 2 * 1024 * 1024 },
+}).fields([
+  { name: "file", maxCount: 1 },
+  { name: "title", maxCount: 1 },
+  { name: "summary", maxCount: 1 },
+  { name: "content", maxCount: 1 },
+]);
 
 function checkFileType(file, cb) {
   const fileTypes = /jpeg|jpg|png|gif|webp/;
@@ -36,33 +29,45 @@ function checkFileType(file, cb) {
   }
 }
 
-// upload to firebase storage ย้ายจาก ram ไปที่ firebase
+// upload to supabase storage ย้ายจาก ram ไปที่ supabase
 async function uploadToFirebase(req, res, next) {
-  if (!req.file) {
+  // When using .fields(), files are in req.files object
+  const fileArray = req.files?.file;
+  if (!fileArray || fileArray.length === 0) {
     next();
     return;
   }
 
-  // save location
-  const storageRef = ref(firebaseStorage, `uploads/${req.file.originalname}`);
-
-  const metadata = {
-    contentType: req.file.mimetype,
-  };
+  const fileObj = fileArray[0];
 
   try {
-    const snapshot = await uploadBytesResumable(
-      storageRef,
-      req.file.buffer,
-      metadata
-    );
-    // get url from firebase
-    req.file.firebaseUrl = await getDownloadURL(snapshot.ref);
+    // Upload to Supabase Storage
+    const fileName = `uploads/${Date.now()}-${fileObj.originalname}`;
+    const { data, error } = await supabaseAdmin.storage
+      .from("uploads")
+      .upload(fileName, fileObj.buffer, {
+        contentType: fileObj.mimetype,
+      });
+
+    if (error) {
+      throw error;
+    }
+
+    // Get public URL from Supabase
+    const { data: publicUrlData } = supabaseAdmin.storage
+      .from("uploads")
+      .getPublicUrl(fileName);
+
+    // Store file info for use in controller
+    req.file = {
+      originalname: fileObj.originalname,
+      firebaseUrl: publicUrlData.publicUrl,
+    };
     next();
   } catch (error) {
     res.status(500).json({
       message:
-        error.message || "Something went wrong while uploading to firebase",
+        error.message || "Something went wrong while uploading to supabase",
     });
   }
 }
