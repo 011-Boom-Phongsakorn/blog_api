@@ -65,9 +65,11 @@ async function uploadToFirebase(req, res, next) {
     };
     next();
   } catch (error) {
+    console.error("Supabase upload error:", error);
     res.status(500).json({
       message:
         error.message || "Something went wrong while uploading to supabase",
+      error: error.toString()
     });
   }
 }
