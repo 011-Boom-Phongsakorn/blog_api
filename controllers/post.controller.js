@@ -2,6 +2,12 @@ const Post = require("../models/Post");
 
 exports.createPost = async (req, res) => {
   try {
+    console.log("=== CREATE POST START ===");
+    console.log("req.body:", req.body);
+    console.log("req.files:", req.files);
+    console.log("req.file:", req.file);
+    console.log("req.authorId:", req.authorId);
+
     // Get text fields from req.body (when using .fields())
     const { title, summary, content } = req.body;
     const authorId = req.authorId;
@@ -13,10 +19,13 @@ exports.createPost = async (req, res) => {
     }
 
     if (!title || !summary || !content) {
+      console.log("Missing fields - title:", title, "summary:", summary, "content:", content);
       return res.status(400).json({
         message: "title, summary, content are required!!",
       });
     }
+
+    console.log("Creating post with cover:", req.file?.firebaseUrl);
 
     const post = await Post.create({
       title,
@@ -31,13 +40,14 @@ exports.createPost = async (req, res) => {
         message: "Cannot create a new post",
       });
     }
+    console.log("Post created successfully:", post._id);
     res.json({
       message: "Post Created Successfully.",
       post,
     });
   } catch (error) {
-    console.log(error);
-    return res.status(500).json({ msg: "Server error at create post", error });
+    console.log("CREATE POST ERROR:", error);
+    return res.status(500).json({ msg: "Server error at create post", error: error.message });
   }
 };
 
