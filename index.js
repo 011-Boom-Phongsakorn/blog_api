@@ -11,6 +11,7 @@ const DB_URL = process.env.DB_URL;
 const userRouter = require("./routers/user.router");
 const postRouter = require("./routers/post.router");
 
+
 app.use(
   cors({
     origin: BASE_URL,
