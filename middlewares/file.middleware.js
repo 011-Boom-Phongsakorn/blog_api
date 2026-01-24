@@ -8,7 +8,7 @@ const supabaseAdmin = require("../config/supabase.config");
 // set storage engine
 const upload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 1000000, fieldSize: 2 * 1024 * 1024 },
+  limits: { fileSize: 10 * 1024 * 1024, fieldSize: 10 * 1024 * 1024 }, // 10MB limit
 }).fields([
   { name: "file", maxCount: 1 },
   { name: "title", maxCount: 1 },
